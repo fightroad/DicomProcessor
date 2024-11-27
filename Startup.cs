@@ -31,8 +31,8 @@ namespace DicomProcessor
                 logger.LogInformation("开发环境已启用。");
             }
 
-            // 添加 HTTPS 重定向和静态文件支持
-            app.UseHttpsRedirection();
+            // 去掉 HTTPS 重定向
+            // app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();

@@ -15,7 +15,6 @@ namespace DicomProcessor.Controllers
     public class DicomController : ControllerBase
     {
         private static readonly SemaphoreSlim _processingSemaphore = new(Environment.ProcessorCount);
-        private static readonly object _consoleLock = new object();
 
         [HttpGet("process")]
         public async Task<IActionResult> ProcessDicomFiles([FromQuery] string sharePath)
@@ -31,12 +30,11 @@ namespace DicomProcessor.Controllers
 
             var results = new ConcurrentBag<DicomFileResult>();
             int processedCount = 0;
-
             var stopwatch = Stopwatch.StartNew();
 
             await Parallel.ForEachAsync(dicomFiles, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (file, token) =>
             {
-                await _processingSemaphore.WaitAsync();
+                await _processingSemaphore.WaitAsync(token);
                 try
                 {
                     var result = await ProcessDicomFileAsync(file).ConfigureAwait(false);
@@ -48,23 +46,21 @@ namespace DicomProcessor.Controllers
                     int processed = Interlocked.Increment(ref processedCount);
                     if (processed % 100 == 0)
                     {
-                        lock (_consoleLock)
-                        {
-                            Console.Write($"\r进度: {processed * 100 / totalFiles}% ({processed}/{totalFiles})");
-                        }
+                        Console.Write($"\r进度: {processed * 100 / totalFiles}% ({processed}/{totalFiles})");
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"处理文件 {file} 时出错: {ex.Message}");
                 }
                 finally
                 {
                     _processingSemaphore.Release();
                 }
-            });
+            }).ConfigureAwait(false);
 
             // 最后一次更新进度到 100%
-            lock (_consoleLock)
-            {
-                Console.Write($"\r进度: 100% ({processedCount}/{totalFiles})");
-            }
+            Console.Write($"\r进度: 100% ({processedCount}/{totalFiles})");
 
             stopwatch.Stop();
             Console.WriteLine($"\n处理完成! 成功处理: {results.Count}/{totalFiles}个文件");
@@ -124,15 +120,8 @@ namespace DicomProcessor.Controllers
         {
             try
             {
-                if (dataset.Contains(tag))
-                {
-                    var value = dataset.GetSingleValueOrDefault(tag, string.Empty);
-                    tags.TryAdd(tagName, value?.Trim() ?? string.Empty);
-                }
-                else
-                {
-                    tags.TryAdd(tagName, string.Empty);
-                }
+                var value = dataset.Contains(tag) ? dataset.GetSingleValueOrDefault(tag, string.Empty) : string.Empty;
+                tags.TryAdd(tagName, value?.Trim() ?? string.Empty);
             }
             catch (Exception ex)
             {
