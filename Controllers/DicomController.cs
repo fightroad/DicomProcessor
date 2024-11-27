@@ -14,7 +14,7 @@ namespace DicomProcessor.Controllers
     [Route("api/[controller]")]
     public class DicomController : ControllerBase
     {
-        private static readonly SemaphoreSlim _processingSemaphore = new(Environment.ProcessorCount * 2);
+        private static readonly SemaphoreSlim _processingSemaphore = new(Environment.ProcessorCount);
         private static readonly object _consoleLock = new object();
 
         [HttpGet("process")]
@@ -36,7 +36,7 @@ namespace DicomProcessor.Controllers
 
             await Task.Run(async () =>
             {
-                await Parallel.ForEachAsync(dicomFiles, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }, async (file, token) =>
+                await Parallel.ForEachAsync(dicomFiles, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (file, token) =>
                 {
                     await _processingSemaphore.WaitAsync();
                     try

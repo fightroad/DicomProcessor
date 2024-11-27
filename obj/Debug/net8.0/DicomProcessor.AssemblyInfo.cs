@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DicomProcessor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5a514da1d7b199b906e379c3dc2d78bd0ebedfda")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b51b8ff7e011c08ecb71d8cbe1dfbc1207579306")]
 [assembly: System.Reflection.AssemblyProductAttribute("DicomProcessor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DicomProcessor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
