@@ -15,6 +15,7 @@ namespace DicomProcessor.Controllers
     public class DicomController : ControllerBase
     {
         private static readonly SemaphoreSlim _processingSemaphore = new(Environment.ProcessorCount);
+        private static readonly object _consoleLock = new object();
 
         [HttpGet("process")]
         public async Task<IActionResult> ProcessDicomFiles([FromQuery] string sharePath)
@@ -30,6 +31,7 @@ namespace DicomProcessor.Controllers
 
             var results = new ConcurrentBag<DicomFileResult>();
             int processedCount = 0;
+
             var stopwatch = Stopwatch.StartNew();
 
             await Parallel.ForEachAsync(dicomFiles, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (file, token) =>
@@ -57,6 +59,7 @@ namespace DicomProcessor.Controllers
             }).ConfigureAwait(false);
 
             Console.Write($"\r进度: 100% ({processedCount}/{totalFiles})");
+
             stopwatch.Stop();
             Console.WriteLine($"\n处理完成! 成功处理: {results.Count}/{totalFiles}个文件");
             Console.WriteLine($"总用时: {stopwatch.ElapsedMilliseconds / 1000.0:F1}秒");
