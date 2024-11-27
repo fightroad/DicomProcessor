@@ -37,4 +37,3 @@ E:\Project\GitHub\DicomProcessor\obj\Debug\net8.0\refint\DicomProcessor.dll
 E:\Project\GitHub\DicomProcessor\obj\Debug\net8.0\DicomProcessor.pdb
 E:\Project\GitHub\DicomProcessor\obj\Debug\net8.0\DicomProcessor.genruntimeconfig.cache
 E:\Project\GitHub\DicomProcessor\obj\Debug\net8.0\ref\DicomProcessor.dll
-E:\Project\GitHub\DicomProcessor\bin\Debug\net8.0\DicomProcessor.staticwebassets.runtime.json

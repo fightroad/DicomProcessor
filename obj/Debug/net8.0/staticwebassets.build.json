@@ -1,19 +1,11 @@
 {
   "Version": 1,
-  "Hash": "OJ4wM5WWC1uOX3fguDclCH/9TA8/G4g3T9GeUiri0mE=",
+  "Hash": "LDLBapndqtXaCZqGIg0t4ao5FtIj49D3C3gQc0sZNS4=",
   "Source": "DicomProcessor",
   "BasePath": "_content/DicomProcessor",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [
-    {
-      "Name": "DicomProcessor\\wwwroot",
-      "Source": "DicomProcessor",
-      "ContentRoot": "E:\\Project\\GitHub\\DicomProcessor\\wwwroot\\",
-      "BasePath": "_content/DicomProcessor",
-      "Pattern": "**"
-    }
-  ],
+  "DiscoveryPatterns": [],
   "Assets": []
 }
