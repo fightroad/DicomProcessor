@@ -25,7 +25,7 @@ namespace DicomProcessor.Controllers
                 return BadRequest("共享目录路径不能为空或不存在");
             }
 
-            var dicomFiles = await Task.Run(() => Directory.EnumerateFiles(sharePath, "*.dcm", SearchOption.AllDirectories).ToList());
+            var dicomFiles = Directory.EnumerateFiles(sharePath, "*.dcm", SearchOption.AllDirectories).ToList();
             int totalFiles = dicomFiles.Count;
             Console.WriteLine($"找到 {totalFiles} 个 DICOM 文件");
 
@@ -34,34 +34,37 @@ namespace DicomProcessor.Controllers
 
             var stopwatch = Stopwatch.StartNew();
 
-            await Task.Run(async () =>
+            await Parallel.ForEachAsync(dicomFiles, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (file, token) =>
             {
-                await Parallel.ForEachAsync(dicomFiles, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (file, token) =>
+                await _processingSemaphore.WaitAsync();
+                try
                 {
-                    await _processingSemaphore.WaitAsync();
-                    try
+                    var result = await ProcessDicomFileAsync(file).ConfigureAwait(false);
+                    if (result != null)
                     {
-                        var result = await ProcessDicomFileAsync(file);
-                        if (result != null)
-                        {
-                            results.Add(result);
-                        }
+                        results.Add(result);
+                    }
 
-                        int processed = Interlocked.Increment(ref processedCount);
-                        if (processed % 100 == 0)
+                    int processed = Interlocked.Increment(ref processedCount);
+                    if (processed % 100 == 0)
+                    {
+                        lock (_consoleLock)
                         {
-                            lock (_consoleLock)
-                            {
-                                Console.Write($"\r进度: {processed * 100 / totalFiles}% ({processed}/{totalFiles})");
-                            }
+                            Console.Write($"\r进度: {processed * 100 / totalFiles}% ({processed}/{totalFiles})");
                         }
                     }
-                    finally
-                    {
-                        _processingSemaphore.Release();
-                    }
-                });
+                }
+                finally
+                {
+                    _processingSemaphore.Release();
+                }
             });
+
+            // 最后一次更新进度到 100%
+            lock (_consoleLock)
+            {
+                Console.Write($"\r进度: 100% ({processedCount}/{totalFiles})");
+            }
 
             stopwatch.Stop();
             Console.WriteLine($"\n处理完成! 成功处理: {results.Count}/{totalFiles}个文件");
@@ -77,7 +80,7 @@ namespace DicomProcessor.Controllers
                 var result = new DicomFileResult { FilePath = filePath };
                 var tags = new ConcurrentDictionary<string, string>();
 
-                var dicomFile = await DicomFile.OpenAsync(filePath, FileReadOption.Default);
+                var dicomFile = await DicomFile.OpenAsync(filePath, FileReadOption.Default).ConfigureAwait(false);
                 var dataset = dicomFile.Dataset;
 
                 dataset.Remove(DicomTag.PixelData);
