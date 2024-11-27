@@ -21,29 +21,37 @@ namespace DicomProcessor
                            .AllowAnyHeader();
                 });
             });
+
+            // 注册其他服务，例如数据库上下文、身份验证等
+            // services.AddDbContext<MyDbContext>(options => ...);
         }
 
-        public void Configure(IApplicationBuilder app, IHostEnvironment env, ILogger<Startup> logger)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                logger.LogInformation("开发环境已启用。");
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+                // app.UseHsts(); // 去掉 HSTS 支持
             }
 
-            // 添加 HTTPS 重定向和静态文件支持
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            // 去掉 HTTPS 重定向
+            // app.UseHttpsRedirection(); 
 
+            app.UseStaticFiles();
             app.UseRouting();
 
             // 使用 CORS 策略
             app.UseCors("AllowAllOrigins");
 
+            app.UseAuthorization(); // 如果使用身份验证，确保在路由之前调用
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                logger.LogInformation("已映射控制器。");
             });
         }
     }

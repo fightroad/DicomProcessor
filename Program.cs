@@ -24,6 +24,12 @@ namespace DicomProcessor
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders(); // 清除默认日志提供程序
+                    logging.AddConsole(); // 添加控制台日志
+                    logging.AddDebug(); // 添加调试日志
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

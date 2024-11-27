@@ -36,7 +36,7 @@ namespace DicomProcessor.Controllers
 
             await Parallel.ForEachAsync(dicomFiles, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (file, token) =>
             {
-                await _processingSemaphore.WaitAsync();
+                await _processingSemaphore.WaitAsync(token);
                 try
                 {
                     var result = await ProcessDicomFileAsync(file).ConfigureAwait(false);
@@ -45,26 +45,20 @@ namespace DicomProcessor.Controllers
                         results.Add(result);
                     }
 
-                    int processed = Interlocked.Increment(ref processedCount);
-                    if (processed % 100 == 0)
-                    {
-                        lock (_consoleLock)
-                        {
-                            Console.Write($"\r进度: {processed * 100 / totalFiles}% ({processed}/{totalFiles})");
-                        }
-                    }
+                    Interlocked.Increment(ref processedCount);
+                    UpdateProgress(processedCount, totalFiles);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"处理文件 {file} 时出错: {ex.Message}");
                 }
                 finally
                 {
                     _processingSemaphore.Release();
                 }
-            });
+            }).ConfigureAwait(false);
 
-            // 最后一次更新进度到 100%
-            lock (_consoleLock)
-            {
-                Console.Write($"\r进度: 100% ({processedCount}/{totalFiles})");
-            }
+            Console.Write($"\r进度: 100% ({processedCount}/{totalFiles})");
 
             stopwatch.Stop();
             Console.WriteLine($"\n处理完成! 成功处理: {results.Count}/{totalFiles}个文件");
@@ -84,7 +78,7 @@ namespace DicomProcessor.Controllers
                 var dataset = dicomFile.Dataset;
 
                 dataset.Remove(DicomTag.PixelData);
-                ExtractTags(dataset, tags);
+                await ExtractTagsAsync(dataset, tags).ConfigureAwait(false);
 
                 result.Tags = tags;
                 return result;
@@ -96,7 +90,7 @@ namespace DicomProcessor.Controllers
             }
         }
 
-        private void ExtractTags(DicomDataset dataset, ConcurrentDictionary<string, string> tags)
+        private async Task ExtractTagsAsync(DicomDataset dataset, ConcurrentDictionary<string, string> tags)
         {
             var tagList = new (DicomTag, string)[]
             {
@@ -117,27 +111,29 @@ namespace DicomProcessor.Controllers
                 (DicomTag.SOPClassUID, "SOPClassUID")
             };
 
-            Parallel.ForEach(tagList, tag => ExtractTag(dataset, tag.Item1, tag.Item2, tags));
+            var tasks = tagList.Select(tag => ExtractTagAsync(dataset, tag.Item1, tag.Item2, tags));
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        private void ExtractTag(DicomDataset dataset, DicomTag tag, string tagName, ConcurrentDictionary<string, string> tags)
+        private async Task ExtractTagAsync(DicomDataset dataset, DicomTag tag, string tagName, ConcurrentDictionary<string, string> tags)
         {
             try
             {
-                if (dataset.Contains(tag))
-                {
-                    var value = dataset.GetSingleValueOrDefault(tag, string.Empty);
-                    tags.TryAdd(tagName, value?.Trim() ?? string.Empty);
-                }
-                else
-                {
-                    tags.TryAdd(tagName, string.Empty);
-                }
+                var value = dataset.Contains(tag) ? dataset.GetSingleValueOrDefault(tag, string.Empty) : string.Empty;
+                tags.TryAdd(tagName, value?.Trim() ?? string.Empty);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"提取标签 {tagName} 时出错: {ex.Message}");
                 tags.TryAdd(tagName, string.Empty);
+            }
+        }
+
+        private void UpdateProgress(int processed, int totalFiles)
+        {
+            if (processed % 100 == 0)
+            {
+                Console.Write($"\r进度: {processed * 100 / totalFiles}% ({processed}/{totalFiles})");
             }
         }
     }
