@@ -1,2 +1,0 @@
-E:\Project\DicomProcessor\publish\DicomProcessor.pdb
-E:\Project\DicomProcessor\publish\DicomProcessor.exe

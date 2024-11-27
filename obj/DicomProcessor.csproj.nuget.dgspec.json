@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Project\\DicomProcessor\\DicomProcessor.csproj": {}
+    "E:\\Project\\GitHub\\DicomProcessor\\DicomProcessor.csproj": {}
   },
   "projects": {
-    "E:\\Project\\DicomProcessor\\DicomProcessor.csproj": {
+    "E:\\Project\\GitHub\\DicomProcessor\\DicomProcessor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Project\\DicomProcessor\\DicomProcessor.csproj",
+        "projectUniqueName": "E:\\Project\\GitHub\\DicomProcessor\\DicomProcessor.csproj",
         "projectName": "DicomProcessor",
-        "projectPath": "E:\\Project\\DicomProcessor\\DicomProcessor.csproj",
+        "projectPath": "E:\\Project\\GitHub\\DicomProcessor\\DicomProcessor.csproj",
         "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-        "outputPath": "E:\\Project\\DicomProcessor\\obj\\",
+        "outputPath": "E:\\Project\\GitHub\\DicomProcessor\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -43,11 +43,13 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "Microsoft.NET.ILLink.Tasks": {
-              "suppressParent": "All",
+            "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
-              "version": "[8.0.7, )",
-              "autoReferenced": true
+              "version": "[8.0.7, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.4.0, )"
             },
             "fo-dicom": {
               "target": "Package",
@@ -65,31 +67,15 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
-              "version": "[8.0.7, 8.0.7]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Runtime.win-x64",
-              "version": "[8.0.7, 8.0.7]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
-              "version": "[8.0.7, 8.0.7]"
-            }
-          ],
           "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
-        }
-      },
-      "runtimes": {
-        "win-x64": {
-          "#import": []
         }
       }
     }
