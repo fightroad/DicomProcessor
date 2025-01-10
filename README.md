@@ -1,7 +1,7 @@
 # DicomProcessor
 
 ## 项目简介
-DicomProcessor 是一个用于处理 DICOM 文件的 API。它允许用户上传 DICOM 文件并提取相关的元数据。该项目旨在为医疗影像处理提供一个简单而高效的解决方案。
+DicomProcessor 是一个用于处理 DICOM 文件的 API。它允许指定 DICOM 文件路径提取DCM文件相关的元数据。该项目旨在为医疗影像处理提供一个简单而高效的解决方案。
 
 ## 功能
 - 支持批量处理 DICOM 文件。
@@ -9,7 +9,7 @@ DicomProcessor 是一个用于处理 DICOM 文件的 API。它允许用户上传
 - 提供 RESTful API 接口，方便与其他系统集成。
 
 ## 技术栈
-- .NET 6
+- .NET 8
 - ASP.NET Core
 - FellowOakDicom
 
@@ -22,7 +22,7 @@ DicomProcessor 是一个用于处理 DICOM 文件的 API。它允许用户上传
 
 2. 使用 Visual Studio 或命令行工具打开项目。
 
-3. 确保安装了 .NET 6 SDK。
+3. 确保安装了 .NET 8 SDK。
 
 4. 运行项目：
    ```bash
