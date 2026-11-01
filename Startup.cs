@@ -10,6 +10,16 @@ namespace DicomProcessor
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "DicomProcessor API",
+                    Version = "v1",
+                    Description = "DICOM 元数据提取 API"
+                });
+            });
 
             // 如果需要跨域访问，可以配置 CORS
             services.AddCors(options =>
@@ -30,6 +40,13 @@ namespace DicomProcessor
                 app.UseDeveloperExceptionPage();
                 logger.LogInformation("开发环境已启用。");
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "DicomProcessor API v1");
+                options.RoutePrefix = "swagger";
+            });
 
             // 去掉 HTTPS 重定向
             // app.UseHttpsRedirection();

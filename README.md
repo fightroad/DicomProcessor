@@ -7,12 +7,13 @@
 - 递归扫描目录下全部 `.dcm` 文件
 - 并行提取患者 / 检查 / 序列 / 实例相关元数据
 - 读取时跳过 `PixelData`，降低内存占用
-- 提供 RESTful API，便于与其他系统集成
+- 提供 RESTful API，开发环境可通过 Swagger 调试
 
 ## 技术栈
 
 - .NET 8 / ASP.NET Core
 - [fo-dicom](https://github.com/fo-dicom/fo-dicom) (FellowOakDicom) 5.1.5
+- Swashbuckle（Swagger）
 
 ## 环境要求
 
@@ -32,6 +33,9 @@ dotnet run
 |------|------|
 | http://localhost:5168 | HTTP |
 | https://localhost:7274 | HTTPS |
+| http://localhost:5168/swagger | Swagger UI |
+
+![Swagger 调用示例](doc/swagger.png)
 
 Gitee 镜像：`https://gitee.com/fightroad/DicomProcessor.git`
 
