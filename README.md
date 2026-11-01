@@ -1,73 +1,101 @@
 # DicomProcessor
 
-## 项目简介
-DicomProcessor 是一个用于处理 DICOM 文件的 API。它允许指定 DICOM 文件路径提取DCM文件相关的元数据。该项目旨在为医疗影像处理提供一个简单而高效的解决方案。
+基于 ASP.NET Core 的 DICOM 元数据提取 API：指定目录后递归扫描 `.dcm` 文件，并行提取常用标签并以 JSON 返回。
 
 ## 功能
-- 支持批量处理 DICOM 文件。
-- 提取 DICOM 文件中的重要元数据（如患者信息、研究信息等）。
-- 提供 RESTful API 接口，方便与其他系统集成。
+
+- 递归扫描目录下全部 `.dcm` 文件
+- 并行提取患者 / 检查 / 序列 / 实例相关元数据
+- 读取时跳过 `PixelData`，降低内存占用
+- 提供 RESTful API，便于与其他系统集成
 
 ## 技术栈
-- .NET 8
-- ASP.NET Core
-- FellowOakDicom
 
-## 安装与运行
-1. 克隆项目到本地：
-   ```bash
-   git clone https://github.com/yourusername/DicomProcessor.git
-   cd DicomProcessor
-   ```
+- .NET 8 / ASP.NET Core
+- [fo-dicom](https://github.com/fo-dicom/fo-dicom) (FellowOakDicom) 5.1.5
 
-2. 使用 Visual Studio 或命令行工具打开项目。
+## 环境要求
 
-3. 确保安装了 .NET 8 SDK。
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 
-4. 运行项目：
-   ```bash
-   dotnet run
-   ```
+## 快速开始
 
-5. API 将在 `http://localhost:5000` 上运行。
+```bash
+git clone https://github.com/fightroad/DicomProcessor.git
+cd DicomProcessor
+dotnet run
+```
 
-## API 端点
+启动后：
 
-### 处理 DICOM 文件
-- **请求方法**: `GET`
-- **路径**: `/api/dicom/process`
-- **查询参数**:
-  - `sharePath`: 共享目录的路径，必须包含 DICOM 文件。
-- **示例请求**:
-  ```http
-  GET http://localhost:5000/api/dicom/process?sharePath=C:\path\to\dicom\files
-  ```
+| 地址 | 说明 |
+|------|------|
+| http://localhost:5168 | HTTP |
+| https://localhost:7274 | HTTPS |
 
-### 返回值
-- 返回一个 JSON 对象，包含处理结果和提取的标签信息。例如：
-  ```json
+Gitee 镜像：`https://gitee.com/fightroad/DicomProcessor.git`
+
+## API
+
+### `GET /api/dicom/process`
+
+| 参数 | 位置 | 必填 | 说明 |
+|------|------|------|------|
+| `sharePath` | Query | 是 | 含 DICOM 文件的目录路径，须存在 |
+
+**请求示例**
+
+```http
+GET http://localhost:5168/api/dicom/process?sharePath=C:\path\to\dicom\files
+```
+
+路径不存在或为空时返回 `400`，正文：`共享目录路径不能为空或不存在`。
+
+**成功响应**（`200`，直接返回数组）
+
+```json
+[
   {
-      "success": true,
-      "results": [
-          {
-              "FilePath": "C:\\path\\to\\dicom\\files\\example.dcm",
-              "Tags": {
-                  "PatientID": "12345",
-                  "PatientName": "John Doe",
-                  "StudyInstanceUID": "1.2.3.4.5"
-              }
-          }
-      ]
+    "filePath": "C:\\path\\to\\dicom\\files\\example.dcm",
+    "tags": {
+      "PatientID": "12345",
+      "PatientName": "John Doe",
+      "PatientBirthDate": "19800101",
+      "StudyInstanceUID": "1.2.3.4.5",
+      "StudyID": "1",
+      "StudyDate": "20240101",
+      "StudyTime": "120000",
+      "StudyDescription": "CT Chest",
+      "SeriesInstanceUID": "1.2.3.4.5.6",
+      "SeriesNumber": "1",
+      "Modality": "CT",
+      "SeriesDescription": "Axial",
+      "SOPInstanceUID": "1.2.3.4.5.6.7",
+      "InstanceNumber": "1",
+      "SOPClassUID": "1.2.840.10008.5.1.4.1.1.2"
+    }
   }
-  ```
+]
+```
+
+### 提取的标签
+
+| 标签 | 说明 |
+|------|------|
+| PatientID / PatientName / PatientBirthDate | 患者 |
+| StudyInstanceUID / StudyID / StudyDate / StudyTime / StudyDescription | 检查 |
+| SeriesInstanceUID / SeriesNumber / Modality / SeriesDescription | 序列 |
+| SOPInstanceUID / InstanceNumber / SOPClassUID | 实例 |
+
+单个文件解析失败时会跳过该文件并在控制台输出错误；接口仍返回其余成功结果。处理进度与耗时会打印到控制台。
 
 ## 注意事项
-- 确保提供的路径存在且包含 DICOM 文件。
-- 处理过程中可能会输出进度信息到控制台。
-- 处理完成后，返回的结果将包含成功处理的文件数量和相关的元数据。
 
-## 贡献
-欢迎任何形式的贡献！请提交问题或拉取请求。
+- 仅匹配扩展名为 `.dcm` 的文件
+- 并行度默认为 CPU 核心数
+- 已启用 CORS（允许任意来源），便于前端或其他服务调用
+- 生产环境请按需收紧 CORS，并注意路径访问权限
 
 ## 许可证
-本项目采用 MIT 许可证，详细信息请查看 LICENSE 文件。
+
+[MIT](LICENSE)
